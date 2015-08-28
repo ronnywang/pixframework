@@ -55,8 +55,9 @@ class Pix_Table_Db_Adapter_PgSQL extends Pix_Table_Db_Adapter_SQL
 
     public function query($sql)
     {
+        $short_sql = mb_strimwidth($sql, 0, 512, "...len=" . strlen($sql));
         if (Pix_Table::$_log_groups[Pix_Table::LOG_QUERY]) {
-            Pix_Table::debug(sprintf("[%s]\t%40s", $this->_path . $this->_name, $sql));
+            Pix_Table::debug(sprintf("[%s]\t%40s", $this->_path . $this->_name, $short_sql));
         }
 
         $starttime = microtime(true);
@@ -67,13 +68,13 @@ class Pix_Table_Db_Adapter_PgSQL extends Pix_Table_Db_Adapter_SQL
             }
             if ($errorInfo[2] == 'PRIMARY KEY must be unique' or
                     preg_match('/duplicate key value violates unique constraint/', $errorInfo[2])) {
-                throw new Pix_Table_DuplicateException();
+                throw new Pix_Table_DuplicateException($errorInfo[2]);
             }
-            throw new Exception("SQL Error: ({$errorInfo[0]}:{$errorInfo[1]}) {$errorInfo[2]} (SQL: {$sql})");
+            throw new Exception("SQL Error: ({$errorInfo[0]}:{$errorInfo[1]}) {$errorInfo[2]} (SQL: {$short_sql})");
         }
         $res = $statement->execute();
 	if (($t = Pix_Table::getLongQueryTime()) and ($delta = (microtime(true) - $starttime)) > $t) {
-            Pix_Table::debug(sprintf("[%s]\t%s\t%40s", $this->_pdo->getAttribute(PDO::ATTR_SERVER_INFO), $delta, $sql));
+            Pix_Table::debug(sprintf("[%s]\t%s\t%40s", $this->_pdo->getAttribute(PDO::ATTR_SERVER_INFO), $delta, $short_sql));
 	}
 
 	if ($res === false) {
@@ -82,9 +83,9 @@ class Pix_Table_Db_Adapter_PgSQL extends Pix_Table_Db_Adapter_SQL
             }
             if ($errorInfo[2] == 'PRIMARY KEY must be unique' or
                     preg_match('/duplicate key value violates unique constraint/', $errorInfo[2])) {
-                throw new Pix_Table_DuplicateException();
+                throw new Pix_Table_DuplicateException($errorInfo[2]);
             }
-            throw new Exception("SQL Error: ({$errorInfo[0]}:{$errorInfo[1]}) {$errorInfo[2]} (SQL: {$sql})");
+            throw new Exception("SQL Error: ({$errorInfo[0]}:{$errorInfo[1]}) {$errorInfo[2]} (SQL: {$short_sql})");
 	}
         
         return new Pix_Table_Db_Adapter_PDO_Result($statement);
