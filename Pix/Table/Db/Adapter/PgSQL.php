@@ -269,4 +269,42 @@ class Pix_Table_Db_Adapter_PgSQL extends Pix_Table_Db_Adapter_SQL
         $res->free_result();
         return $tables;
     }
+
+    /**
+     * _get_clause 從 $search 條件中，回傳 ORDER BY ... LIMIT ...
+     * 
+     * @param Pix_Table_Search $search 
+     * @access protected
+     * @return string
+     */
+    protected function _get_clause($search)
+    {
+        $sql = '';
+        if ($order = $search->order()) {
+            if (is_array($order)) {
+                // 如果指定 before 的話，順序要調過來
+                if ($search->before()) {
+                    $order = Pix_Table_Search::reverseOrder($order);
+                }
+                $order_term = array();
+                foreach ($order as $column => $way) {
+                    $order_term[] = $this->column_quote($column) . ' ' . $way;
+                }
+                $sql .= ' ORDER BY ' . implode(', ', $order_term);
+            } else {
+                $sql .= ' ORDER BY ' . $order;
+            }
+        }
+
+        $limit = $search->limit();
+        if (!is_null($limit)) {
+            $offset = $search->offset();
+            if (!is_null($offset)) {
+                $sql .= ' OFFSET ' . $offset . ' LIMIT ' . $limit;
+            } else {
+                $sql .= ' LIMIT ' . $limit;
+            }
+        }
+        return $sql;
+    }
 }
