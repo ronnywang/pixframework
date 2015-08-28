@@ -107,7 +107,8 @@ class Pix_Table_Db_Adapter_PgSQL extends Pix_Table_Db_Adapter_SQL
 
 	foreach ($table->_columns as $name => $column) {
             $s = $this->column_quote($name) . ' ';
-            $db_type = in_array($column['type'], $types) ? $column['type'] : 'text';
+            //$db_type = in_array($column['type'], $types) ? $column['type'] : 'text';
+            $db_type = $column['type'];
 
 	    if ($column['unsigned'] and !$column['auto_increment']) {
 		$s .= 'UNSIGNED ';
@@ -214,8 +215,7 @@ class Pix_Table_Db_Adapter_PgSQL extends Pix_Table_Db_Adapter_SQL
 
         $column_options = $table->_columns[$a];
         if ('geography' == $column_options['type']) {
-            return 'ST_Y("' . addslashes($a) . '"::geometry) AS "' . addslashes($a) . ':0", ST_X("' . addslashes($a) . '"::geometry) AS "' . addslashes($a) . ':1"';
-
+            return 'ST_AsGeoJSON("' . addslashes($a) . '"::geometry) AS "' . addslashes($a) . '"';
         }
 
         return '"' . addslashes($a) . '"';
@@ -228,17 +228,19 @@ class Pix_Table_Db_Adapter_PgSQL extends Pix_Table_Db_Adapter_SQL
 	}
 	if ($table->isNumbericColumn($column_name)) {
 	    return intval($value);
-        }
-        if ('geography' == $table->_columns[$column_name]['type']) {
-            if ('POINT' == $table->_columns[$column_name]['modifier'][0]) {
-                return "ST_GeographyFromText('POINT(" . floatval($value[1]) . ' ' . floatval($value[0]) . ")')";
-            }
-        }
+    }
+    if (in_array($table->_columns[$column_name]['type'], array('geography', 'geometry'))) {
+        return "ST_GeomFromGeoJSON(" . $this->_pdo->quote(json_encode($value)) . ")";
+    }
+
+    if ('json' == $table->_columns[$column_name]['type'] and !is_scalar($value)) {
+        return $this->_pdo->quote(json_encode($value));
+    }
 
 	if (!is_scalar($value)) {
             trigger_error("{$_SERVER['SERVER_NAME']}{$_SERVER['REQUEST_URI']} 的 column `{$column_name}` 格式不正確: " . gettype($value), E_USER_WARNING);
 	}
-        return $this->_pdo->quote($value);
+    return $this->_pdo->quote($value);
     }
 
     public function getLastInsertId($table)
