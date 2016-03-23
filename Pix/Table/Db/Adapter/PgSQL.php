@@ -78,8 +78,8 @@ class Pix_Table_Db_Adapter_PgSQL extends Pix_Table_Db_Adapter_SQL
 	}
 
 	if ($res === false) {
-            if ($errno = $this->_pdo->errorCode()) {
-                $errorInfo = $this->_pdo->errorInfo();
+            if ($errno = $statement->errorCode()) {
+                $errorInfo = $statement->errorInfo();
             }
             if ($errorInfo[2] == 'PRIMARY KEY must be unique' or
                     preg_match('/duplicate key value violates unique constraint/', $errorInfo[2])) {
