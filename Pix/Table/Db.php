@@ -24,7 +24,7 @@ class Pix_Table_Db
 
     public static function addDbFromURI($uri)
     {
-        if (strpos($uri, 'mysql://')) {
+        if (strpos($uri, 'mysql://') === 0) {
             if (!preg_match('#mysql://([^:]*):([^@]*)@([^/]*)/(.*)#', strval($uri), $matches)) {
                 throw new Exception("wrong mysql URI format, must be mysql://{user}:{password}@{host}/{db}");
             }
@@ -37,7 +37,7 @@ class Pix_Table_Db
             $config = new StdClass;
             $config->master = $config->slave = $db;
             Pix_Table::setDefaultDb(new Pix_Table_Db_Adapter_MysqlConf(array($config)));
-        } elseif (strpos($uri, 'pgsql://')) {
+        } elseif (strpos($uri, 'pgsql://') === 0) {
             if (!preg_match('#pgsql://([^:]*):([^@]*)@([^/:]*):?([0-9]*)?/(.*)#', strval($uri), $matches)) {
                 throw new Exception("wrong pgsql URI format, must be pgsql://{user}:{password}@{host}/{db}");
             }
@@ -51,7 +51,7 @@ class Pix_Table_Db
                 $options['port'] = $matches[4];
             }
             Pix_Table::setDefaultDb(new Pix_Table_Db_Adapter_PgSQL($options));
-        } elseif (strpos($uri, 'sqlite://')) {
+        } elseif (strpos($uri, 'sqlite://') === 0) {
             $file = substr($uri, strlen('sqlite://'));
             Pix_Table::setDefaultDb(new Pix_Table_Db_Adapter_Sqlite($file));
         } else {
