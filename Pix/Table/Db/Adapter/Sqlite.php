@@ -54,9 +54,9 @@ class Pix_Table_Db_Adapter_Sqlite extends Pix_Table_Db_Adapter_SQL
 	}
 
 	if ($res === false) {
-            if ($errno = $this->_pdo->errorCode()) {
-                $errorInfo = $this->_pdo->errorInfo();
-            }
+        if ($errno = $statement->errorCode()) {
+            $errorInfo = $statement->errorInfo();
+        }
             if ($errorInfo[2] == 'PRIMARY KEY must be unique' or
                     preg_match('/columns? .+ (are|is) not unique/', $errorInfo[2])) {
                 throw new Pix_Table_DuplicateException();
