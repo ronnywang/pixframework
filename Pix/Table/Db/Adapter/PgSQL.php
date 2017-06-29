@@ -122,7 +122,7 @@ class Pix_Table_Db_Adapter_PgSQL extends Pix_Table_Db_Adapter_SQL
                 $s .= 'BYTEA';
             } elseif (in_array($db_type, array('geography', 'geometry'))) {
                 if (array_key_exists('modifier', $column)) {
-                    $type = in_array(strtoupper($column['modifier'][0]), array('GEOMETRYCOLLECTION', 'POINT', 'LINESTRING', 'POLYGON', 'MULTIPOINT', 'MULTILINESTRING', 'MULTIPOLYGON')) ? strtoupper($column['modifier'][0]) : 'POINT';
+                    $type = in_array(strtoupper($column['modifier'][0]), array('GEOMETRYCOLLECTION', 'POINT', 'LINESTRING', 'POLYGON', 'MULTIPOINT', 'MULTILINESTRING', 'MULTIPOLYGON')) ? strtoupper($column['modifier'][0]) : 'GEOMETRY';
                     $srid = array_key_exists(1, $column['modifier']) ? intval($column['modifier'][1]) : 0;
                 } else {
                     $type = 'POINT';
